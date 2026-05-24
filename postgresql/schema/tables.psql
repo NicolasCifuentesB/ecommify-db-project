@@ -1,0 +1,171 @@
+CREATE TABLE customers (
+    customer_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+    customer_unique_id UUID NOT NULL,
+
+    zip_code_prefix VARCHAR(10) NOT NULL,
+
+    city VARCHAR(100) NOT NULL,
+
+    state CHAR(2) NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sellers (
+    seller_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+    zip_code_prefix VARCHAR(10) NOT NULL,
+
+    city VARCHAR(100) NOT NULL,
+
+    state CHAR(2) NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE orders (
+
+    order_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+    customer_id UUID NOT NULL,
+
+    order_status VARCHAR(20) NOT NULL,
+
+    purchase_timestamp TIMESTAMP NOT NULL,
+
+    approved_at TIMESTAMP,
+
+    delivered_carrier_date TIMESTAMP,
+
+    delivered_customer_date TIMESTAMP,
+
+    estimated_delivery_date TIMESTAMP NOT NULL,
+
+    total_amount NUMERIC(12,2) NOT NULL,
+
+    shipping_address JSONB NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_orders_customer
+        FOREIGN KEY (customer_id)
+        REFERENCES customers(customer_id),
+
+    CONSTRAINT chk_order_status
+        CHECK (
+            order_status IN (
+                'pending',
+                'approved',
+                'shipped',
+                'delivered',
+                'canceled'
+            )
+        ),
+
+    CONSTRAINT chk_total_amount
+        CHECK (total_amount > 0)
+);
+
+CREATE TABLE order_items (
+
+    order_item_id BIGSERIAL PRIMARY KEY,
+
+    order_id UUID NOT NULL,
+
+    product_id UUID NOT NULL,
+
+    seller_id UUID NOT NULL,
+
+    quantity INTEGER DEFAULT 1,
+
+    unit_price NUMERIC(10,2) NOT NULL,
+
+    freight_value NUMERIC(10,2) DEFAULT 0,
+
+    shipping_limit_date TIMESTAMP NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_order_items_order
+        FOREIGN KEY (order_id)
+        REFERENCES orders(order_id),
+
+    CONSTRAINT fk_order_items_seller
+        FOREIGN KEY (seller_id)
+        REFERENCES sellers(seller_id),
+
+    CONSTRAINT chk_quantity
+        CHECK (quantity > 0),
+
+    CONSTRAINT chk_unit_price
+        CHECK (unit_price > 0),
+
+    CONSTRAINT chk_freight
+        CHECK (freight_value >= 0)
+);
+
+CREATE TABLE payments (
+
+    payment_id BIGSERIAL PRIMARY KEY,
+
+    order_id UUID NOT NULL,
+
+    payment_sequential INTEGER NOT NULL,
+
+    payment_type VARCHAR(30) NOT NULL,
+
+    payment_installments INTEGER NOT NULL,
+
+    payment_value NUMERIC(12,2) NOT NULL,
+
+    payment_metadata JSONB,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_payments_order
+        FOREIGN KEY (order_id)
+        REFERENCES orders(order_id),
+
+    CONSTRAINT chk_installments
+        CHECK (payment_installments >= 1),
+
+    CONSTRAINT chk_payment_value
+        CHECK (payment_value > 0)
+);
+
+CREATE TABLE inventory (
+
+    inventory_id BIGSERIAL PRIMARY KEY,
+
+    product_id UUID NOT NULL UNIQUE,
+
+    stock_quantity INTEGER NOT NULL,
+
+    reserved_quantity INTEGER DEFAULT 0,
+
+    warehouse_location VARCHAR(100) NOT NULL,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_stock
+        CHECK (stock_quantity >= 0),
+
+    CONSTRAINT chk_reserved
+        CHECK (reserved_quantity >= 0)
+);
+
+CREATE TABLE geolocations (
+
+    geolocation_id BIGSERIAL PRIMARY KEY,
+
+    zip_code_prefix VARCHAR(10) NOT NULL,
+
+    city VARCHAR(100) NOT NULL,
+
+    state CHAR(2) NOT NULL,
+
+    location GEOGRAPHY(POINT,4326) NOT NULL
+);

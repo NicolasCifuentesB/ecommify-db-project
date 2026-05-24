@@ -1,0 +1,14 @@
+CREATE TABLE orders_partitioned (
+    LIKE orders INCLUDING ALL
+)
+PARTITION BY RANGE (purchase_timestamp);
+
+CREATE TABLE orders_2017
+PARTITION OF orders_partitioned
+FOR VALUES FROM ('2017-01-01')
+TO ('2018-01-01');
+
+CREATE TABLE orders_2018
+PARTITION OF orders_partitioned
+FOR VALUES FROM ('2018-01-01')
+TO ('2019-01-01');
