@@ -1,2 +1,9 @@
 CREATE SCHEMA IF NOT EXISTS ecommify;
 SET search_path TO ecommify;
+
+-- Tipo compuesto reutilizable para coordenadas geográficas
+-- Usado como referencia semántica en geolocations y consultas espaciales
+CREATE TYPE geo_point_type AS (
+    latitude    DOUBLE PRECISION,
+    longitude   DOUBLE PRECISION
+);

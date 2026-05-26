@@ -75,6 +75,7 @@ CREATE TABLE order_items (
 
     order_id UUID NOT NULL,
 
+    -- product_id referencia a MongoDB products (sin FK relacional)
     product_id UUID NOT NULL,
 
     seller_id UUID NOT NULL,
@@ -140,6 +141,7 @@ CREATE TABLE inventory (
 
     inventory_id BIGSERIAL PRIMARY KEY,
 
+    -- product_id referencia a MongoDB products (sin FK relacional)
     product_id UUID NOT NULL UNIQUE,
 
     stock_quantity INTEGER NOT NULL,

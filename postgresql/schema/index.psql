@@ -11,6 +11,10 @@ CREATE INDEX idx_orders_shipping_address
 ON orders
 USING GIN(shipping_address);
 
+CREATE INDEX idx_payments_metadata
+ON payments
+USING GIN(payment_metadata);
+
 CREATE INDEX idx_geolocation
 ON geolocations
 USING GIST(location);

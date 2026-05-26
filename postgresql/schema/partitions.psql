@@ -1,7 +1,15 @@
+-- ─────────────────────────────────────────────────────────────
+-- Particionamiento de ORDERS por rango temporal
+-- ─────────────────────────────────────────────────────────────
 CREATE TABLE orders_partitioned (
     LIKE orders INCLUDING ALL
 )
 PARTITION BY RANGE (purchase_timestamp);
+
+CREATE TABLE orders_2016
+PARTITION OF orders_partitioned
+FOR VALUES FROM ('2016-01-01')
+TO ('2017-01-01');
 
 CREATE TABLE orders_2017
 PARTITION OF orders_partitioned
@@ -12,3 +20,37 @@ CREATE TABLE orders_2018
 PARTITION OF orders_partitioned
 FOR VALUES FROM ('2018-01-01')
 TO ('2019-01-01');
+
+CREATE TABLE orders_current
+PARTITION OF orders_partitioned
+FOR VALUES FROM ('2019-01-01')
+TO (MAXVALUE);
+
+-- ─────────────────────────────────────────────────────────────
+-- Particionamiento de ORDER_ITEMS por rango temporal
+-- (derivado de shipping_limit_date para alinearse con orders)
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE order_items_partitioned (
+    LIKE order_items INCLUDING ALL
+)
+PARTITION BY RANGE (shipping_limit_date);
+
+CREATE TABLE order_items_2016
+PARTITION OF order_items_partitioned
+FOR VALUES FROM ('2016-01-01')
+TO ('2017-01-01');
+
+CREATE TABLE order_items_2017
+PARTITION OF order_items_partitioned
+FOR VALUES FROM ('2017-01-01')
+TO ('2018-01-01');
+
+CREATE TABLE order_items_2018
+PARTITION OF order_items_partitioned
+FOR VALUES FROM ('2018-01-01')
+TO ('2019-01-01');
+
+CREATE TABLE order_items_current
+PARTITION OF order_items_partitioned
+FOR VALUES FROM ('2019-01-01')
+TO (MAXVALUE);
